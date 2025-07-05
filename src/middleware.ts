@@ -20,9 +20,4 @@ export const userMiddleWare = (
   }
 };
 
-// {
-//     "title":"My first post",
-//     "tag":"Scary",
-//     "link":"Scary movie link",
-//     "type":"Ghosty"
-// }
+

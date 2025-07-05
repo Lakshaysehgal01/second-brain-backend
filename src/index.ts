@@ -3,9 +3,10 @@ import mongoose from "mongoose";
 import jwt from "jsonwebtoken";
 import { signupSchema } from "./zodSchema";
 import bcrypt from "bcrypt";
-import { Content, Tag, User } from "./db";
+import { Content, Link, Tag, User } from "./db";
 import dotenv from "dotenv";
 import { userMiddleWare } from "./middleware";
+import { random } from "./util";
 dotenv.config();
 const app = express();
 const port: number = process.env.PORT || 8080;
@@ -123,7 +124,7 @@ app.delete("/api/v1/content", userMiddleWare, async (req, res) => {
   const contentId = req.body.contentId;
 
   const del = await Content.deleteMany({
-    _id:contentId,
+    _id: contentId,
     userId: req.userId,
   });
   console.log(del);
@@ -132,8 +133,62 @@ app.delete("/api/v1/content", userMiddleWare, async (req, res) => {
   });
 });
 
+app.post("/api/v1/brain/share", userMiddleWare, async (req, res) => {
+  const { share } = req.body;
+  if (share) {
+    const existingLink = await Link.findOne({
+      userId: req.userId,
+    });
+    if (existingLink) {
+      res.json({
+        hash: existingLink.hash,
+      });
+      return;
+    }
+    const hash = random(10);
+    await Link.create({
+      hash: hash,
+      userId: req.userId,
+    });
+    res.json({
+      hash: hash,
+    });
+  } else {
+    await Link.deleteOne({
+      userId: req.userId,
+    });
+    res.json({
+      message: "Link removed",
+    });
+  }
+});
+
+app.get("/api/v1/brain/:shareLink", async (req, res) => {
+  const { shareLink: hash } = req.params;
+  const link = await Link.findOne({
+    hash: hash,
+  });
+  if (!link) {
+    res.status(411).json({
+      message: "Incorrect Input ",
+    });
+    return;
+  }
+  const content = await Content.find({
+    userId: link.userId,
+  });
+  const user = await User.findById(link.userId);
+  if (!user) {
+    res.status(411).json({
+      message: "user not found, error should ideally not happen",
+    });
+    return;
+  }
+  res.json({
+    username: user.username,
+    content: content,
+  });
+});
 app.listen(port, () => {
   console.log(`App is listening on port 8080`);
 });
-
-//password:-1234567
