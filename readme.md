@@ -37,6 +37,18 @@ A simple Express + TypeScript backend for user authentication and content manage
   Delete content by ID (requires JWT).  
   **Body:** `{ "contentId": string }`
 
+### Brain Share
+
+- `POST /api/v1/brain-share`  
+  Share a link with a unique hash for a user (requires JWT in `Authorization` header).  
+  **Body:** `{ "hash": string }`  
+  **Response:** `{ "message": "Link shared" }` or error message.
+
+- `GET /api/v1/brain/:shareLink`  
+  Retrieve the shared link and associated user by share link hash.  
+  **Params:** `shareLink` (string, required)  
+  **Response:** `{ "hash": string, "userId": string }` or error message.
+
 ## Getting Started
 
 ### Prerequisites
